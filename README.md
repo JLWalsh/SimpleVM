@@ -18,6 +18,7 @@ This indicates the the bits 5 to 8 (inclusive) of the instructions are to be use
 Halts the machine.
 
 **Bits used**
+
 *[0-4]*: HALT opcode
 
 **Example**
@@ -30,8 +31,11 @@ Halts the machine.
 Loads an instant value into the specified register.
 
 **Bits used**
+
 *[0-4]*: LOADI opcode
+
 *[5-8]*: Specified register
+
 *[9-16]*: Instant value
 
 **Example**
@@ -42,11 +46,15 @@ Loads 9 into register 3 (note that registers are zero-indexed!).
 
 #### ADD
 Adds two registers together and stores the sum into the specified register.
+
 **Bits used**
 
 *[0-4]*: ADD opcode
+
 *[5-8]*: Left operand register
+
 *[9-12]*: Right operand register
+
 *[13-16]*: Specified register
 
 **Example**
@@ -57,10 +65,13 @@ Adds register 3 and register 2 into register 1.
 
 #### REGDUMP
 Dumps the value of the specified register into the console.
+
 **Bits used**
 
 *[0-4]*: REGDUMP opcode
+
 *[5-8]*: Specified register
+
 **Example**
 
 `0x3100` 
@@ -69,10 +80,13 @@ Dumps the value of the register 2.
 
 #### PROMPTI
 Prompts an instant value from the user and stores it into the specified register (uses window.prompt for now).
+
 **Bits used**
 
 *[0-4]*: PROMPTI opcode
+
 *[5-8]*: Specified register
+
 **Example**
 
 `0x4300` 
@@ -83,8 +97,11 @@ Prompts the user for an instant value and stores it into the register 4.
 Computes the difference (SUB) between two registers and stores it into a special register called the Z register. The value of the Z register can then be used for jump-related instructions like `JLE`.
 
 **Bits used**
+
 *[0-4]*: CMP opcode
+
 *[5-8]*: Left operand register
+
 *[8-9]*: Right operand register
 
 **Example**
@@ -97,7 +114,9 @@ Compares the value of register 3 with register 4.
 Jumps to the specified instruction if the value of the Z register is negative or equal to 0. This stands for "Jumps less or equal".
 
 **Bits used**
+
 *[0-4]*: JLE opcode
+
 *[5-16]*: Specified instruction
 
 **Example**
@@ -110,7 +129,9 @@ Jumps to instruction #5 if the comparison `CMP` evaluated to a negative number.
 Jumps to the specified instruction (basically a GOTO).
 
 **Bits used**
+
 *[0-4]*: JMP opcode
+
 *[5-16]*: Specified instruction
 
 **Example**
@@ -125,7 +146,9 @@ Increments the specified register by a specified instant value.
 **Bits used**
 
 *[0-4]*: ADDI opcode
+
 *[5-8]*: Specified register
+
 *[9-16]*: Instant value
 
 **Example**
@@ -140,8 +163,11 @@ Subtracts the value of two registers and stores it into the specified register.
 **Bits used**
 
 *[0-4]*: SUB opcode
+
 *[5-8]*: Left operand register
+
 *[9-12]*: Right operand register
+
 *[13-16]*: Specified register
 
 **Example**
