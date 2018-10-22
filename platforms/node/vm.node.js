@@ -8,7 +8,7 @@ const file = process.argv[2];
 console.log("Simple VM by James L. Walsh");
 
 if(!file) {
-    console.error("Usage: vm <file>.");
+    console.error("Usage: svm <file>.");
     return;
 }
 
