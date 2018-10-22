@@ -421,48 +421,65 @@ const emit = ({ instructions, jumpTable }) => {
 
     const program = [];
 
-    let compiled = MASK;
-    let nibblePosition = 0;
+    let hadErrors = false;
+    let compiledInstruction = MASK;
+    let nibblePosition = 1;
 
-    const error = (message) => console.error(`ERROR: ${message}`);
-    
-    const emit = (value) => {
-        // 0x0FFF
-        // 0x1000 1
-        // 0x1FFF
+    const error = (message) => {
+        hadErrors = true;
+        console.error(`COMPILE ERROR: ${message}`);
+    }
 
-        // 0x00FF
-        // 0x0200 2
-        // 0x12FF
+    const resolveJumpPosition = (jump) => {
+        const jumpPosition = jumpTable.filter(j => j.label === jump.value)[0].instructionPosition;
 
-        // 0x000F
-        // 0x0200 3
-        // 0x12FF
+        if(isNaN(jumpPosition)) {
+            error(`Could not find label for jump ${jump.value}`);
+        }
+        
+        return jumpPosition;
+    }
 
-        // 0x0000
-        // 0x0200 4
-        // 0x12FF
+    const emit = (value, nibbleLength) => {
+        const rightMaskOffset = Math.max((nibblePosition + nibbleLength), 0) * 4;
+        const leftMaskOffset = (INSTRUCTION_NIBBLE_SIZE - nibblePosition + 1) * 4;
 
-        const rightMask = MASK >>> (nibblePosition + 1) * 4;
-        const leftMask = (rightMask << (INSTRUCTION_NIBBLE_SIZE - nibblePosition) * 4) & MASK;
+        const rightMask = MASK >> rightMaskOffset;
+        const leftMask = (MASK << leftMaskOffset) & MASK; // left bitshift will create overflow otherwise
+        const valueMask = rightMask | leftMask;
 
-        const shiftedValue = value << (INSTRUCTION_NIBBLE_SIZE - nibblePosition - 1) * 4;
-        const c = compiled | rightMask;
-        console.warn((0x0100 | leftMask).toString(16));
+        const offsettedValue = value << ((INSTRUCTION_NIBBLE_SIZE - nibblePosition) * 4);
+        const maskedValue = valueMask | offsettedValue;
+        
+        compiledInstruction = compiledInstruction & maskedValue;
     }
 
     const emitRegister = (register) => {
         const registerBits = (register.value - 1);
-        emit(registerBits);
+        emit(registerBits, 1);
         nibblePosition++;
     };
 
     const emitImmediate = (immediate) => {
-        emit(immediate.value);
+        emit(immediate.value, 2);
         nibblePosition += 2;
     };
 
-    const emitJump = (jump) => {};
+    const emitBlank = () => {
+        if(nibblePosition < INSTRUCTION_NIBBLE_SIZE) {
+            const maskOffset = (INSTRUCTION_NIBBLE_SIZE - nibblePosition - 1) * 4;
+            const zeroMask = (MASK << maskOffset) & MASK
+
+            compiledInstruction = compiledInstruction & zeroMask;
+            nibblePosition = INSTRUCTION_NIBBLE_SIZE;
+        }
+    }
+
+    const emitJump = (jump) => {
+        const jumpPosition = resolveJumpPosition(jump);
+        emit(jumpPosition, 3);
+        nibblePosition += 3;
+    };
 
     const emitOpcode = (opcode) => {
         let opcodeBits = undefined;
@@ -481,31 +498,84 @@ const emit = ({ instructions, jumpTable }) => {
             default: error(`Unknown opcode: ${opcode}`); break;
         }
 
-        emit(opcodeBits);
+        emit(opcodeBits, 1);
         nibblePosition++;
     }
 
     const emitInstruction = (instruction) => {
-        compiled = 0xFFFF;
+        compiledInstruction = 0xFFFF;
         emitOpcode(instruction.opcode);
 
         switch(instruction.opcode) {
+            case Opcodes.HALT: emitBlank(); break;
+            case Opcodes.LOADI: {
+                emitRegister(instruction.args[0]);
+                emitImmediate(instruction.args[2]);
+
+                break;
+            }
             case Opcodes.ADD: {
                 emitRegister(instruction.args[0]);
                 emitRegister(instruction.args[1]);
                 emitRegister(instruction.args[2]);
+
+                break;
             }
+            case Opcodes.REGDUMP: {
+                emitRegister(instruction.args[0]);
+                emitBlank();
+
+                break;
+            }
+            case Opcodes.PROMPTI: {
+                emitRegister(instruction.args[0]);
+                emitBlank();
+
+                break;
+            }
+            case Opcodes.CMP: {
+                emitRegister(instruction.args[0]);
+                emitRegister(instruction.args[1]);
+                emitBlank();
+
+                break;
+            }
+            case Opcodes.JLE: {
+                emitJump(instruction.args[0]);
+
+                break;
+            }
+            case Opcodes.JMP: {
+                emitJump(instruction.args[0]);
+
+                break;
+            }
+            case Opcodes.ADDI: {
+                emitRegister(instruction.args[0]);
+                emitImmediate(instruction.args[1]);
+
+                break;
+            }
+            case Opcodes.SUB: {
+                emitRegister(instruction.args[0]);
+                emitRegister(instruction.args[1]);
+                emitRegister(instruction.args[2]);
+
+                break;
+            }
+            default: error(`Unrecognized opcode: ${instruction.opcode}`);
         }
 
     }
 
-    emitInstruction(instructions[0]);
+    instructions.forEach(emitInstruction);
 
-    return compiled;
+    return compiledInstruction;
 }
 
 const test = `
-ADD reg5 reg7 reg3
+test:
+JMP test
 `;
 
 const tokens = tokenize(test);
@@ -515,7 +585,6 @@ if(!validate(instructions)) {
     console.log("Compilation aborted.");
     return;
 }
-
 const program = emit(instructions);
 
-console.warn(program.toString(2));
+console.warn(program.toString(16));
