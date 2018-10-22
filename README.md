@@ -2,7 +2,17 @@
 ##### By James L. Walsh
 
 ### Introduction
-This virtual machine was written in Javascript with the sole intention of learning more about how they work. This project is heavily inspired by [this online guide published on WikiBooks](https://en.wikibooks.org/wiki/Creating_a_Virtual_Machine/Register_VM_in_C), except it's written in JS and has more instructions.
+This virtual machine was written in Javascript with the sole intention of learning more about how they work. This project is heavily inspired by [this online guide published on WikiBooks](https://en.wikibooks.org/wiki/Creating_a_Virtual_Machine/Register_VM_in_C), except it's written in JS and has more instructions. The machine is a register-based virtual machine, which means that is uses register to store arguments when invoking an opcode.
+
+### Compiler
+A basic (and most likely buggy) compiler is available under the `platforms/node` directory. Here you will find `svmc.bat`, which can be used to call node on `compiler.node.js` with the file to compile. 
+
+*Example*: `svmc.bat myprogram.svms mycompiledprogram.svm`
+
+### Launching the virtual machine
+As for now, the only target environnement for the virtual machine is Node. Extending to an other environnement is as simple as providing two functions, being `promptImmediate` and `writeImmediate`. To run a compiled program, simply use `svm.bat` from the `platforms/node` directory.
+
+*Example*: `svm.bat mycompiledprogram.svm`
 
 ### Instructions
 
