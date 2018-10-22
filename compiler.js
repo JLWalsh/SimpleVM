@@ -15,13 +15,15 @@ const Statements = {
     JUMPLABEL: 'JUMPLABEL',
 }
 
-const tokenize = (code) => {
+const tokenize = (code, errors) => {
     let position = 0;
     let lastParseStart = 0;
     let line = 0;
     const tokens = [];
 
-    const error = (error) => console.error(`[${line}] ERROR: ${error}`);
+    const error = (error) => {
+        errors.push(`[${line}] ERROR: ${error}`);
+    }
 
     const isAtEnd = () => position >= code.length;
 
@@ -163,7 +165,7 @@ const Opcodes = {
     SUB: 'SUB',
 }
 
-const parse = (statements) => {
+const parse = (statements, errors) => {
     const instructions = [];
     const jumpTable = [];
 
@@ -172,7 +174,7 @@ const parse = (statements) => {
     let statementPosition = 0;
     
     const error = (error, statement) => {
-        console.error(`[${statement.line}, ${statement.type}] ERROR: ${error}`);
+        errors.push(`[${statement.line}, ${statement.type}] ERROR: ${error}`);
 
         recover();
     }
@@ -364,19 +366,15 @@ const parse = (statements) => {
     return { instructions, jumpTable };
 }
 
-const validate = ({ instructions, jumpTable }) => {
+const validate = ({ instructions, jumpTable }, errors) => {
     const NB_OF_REGISTERS = 16;
-    
-    let hadErrors = false;
 
     const error = (error, argument) => { 
-        hadErrors = true;
-        console.error(`[${argument.line}, ${argument.type}] ERROR: ${error}`);
+        errors.push(`[${argument.line}, ${argument.type}] ERROR: ${error}`);
     };
     
-    const simpleError = (warning) => {
-        hadErrors = true;
-        console.warn(`ERROR: ${warning}`);
+    const simpleError = (error) => {
+        errors.push(`ERROR: ${error}`);
     }
 
     const isValidRegister = (register) => register.value < NB_OF_REGISTERS;
@@ -410,23 +408,19 @@ const validate = ({ instructions, jumpTable }) => {
                     error(`Jump label does not exist: ${arg.value}`, arg);
         })
     });
-
-    return !hadErrors;
 }
 
-const emit = ({ instructions, jumpTable }) => {
+const emit = ({ instructions, jumpTable }, errors) => {
     const INSTRUCTION_NIBBLE_SIZE = 4;
     const MASK = 0xFFFF;
 
     const program = [];
 
-    let hadErrors = false;
     let compiledInstruction = MASK;
     let nibblePosition = 1;
 
     const error = (message) => {
-        hadErrors = true;
-        console.error(`COMPILE ERROR: ${message}`);
+        errors.push(`COMPILE ERROR: ${message}`);
     }
 
     const resolveJumpPosition = (jump) => {
@@ -558,23 +552,55 @@ const emit = ({ instructions, jumpTable }) => {
     return program;
 }
 
-const test = `
-PROMPTI reg1
+const compile = (source) => {
+    const errors = [];
+
+    const saveToFile = (program, filename) => {
+        var blob = new Blob(new Uint16Array(program), {type: "application/octet-stream"});
+        saveAs(blob, filename+".svms");
+    }
+
+    const compileUntilErrors = () => {
+        const tokens = tokenize(source, errors);
+        if(errors.length > 0)
+            return;
+
+        const instructions = parse(tokens, errors);
+        if(errors.length > 0)
+            return;
+
+        validate(instructions, errors);
+        if(errors.length > 0)
+            return;
+
+        const program = emit(instructions, errors);
+        if(errors.length > 0)
+            return;
+
+        return program;
+    }
+   
+    try {
+        const program = compileUntilErrors();
+    
+        if(errors.length > 0) {
+            errors.forEach(console.error);
+            console.error("Compilation aborted.");
+        }
+
+        if(program && errors.length === 0)
+            saveToFile(window.prompt("Name?"));
+    } catch(error) {
+        console.error("Compiler error.")
+        console.error(error);
+    }
+}
+
+compile(`PROMPTI reg1
 LOADI reg2 #0
 JMP loop
 loopStart: REGDUMP reg2
 ADDI reg2 #1
 loop: CMP reg2 reg1
 JLE loopStart
-HALT ; incorrect opcode
-`;
-
-const tokens = tokenize(test);
-const instructions = parse(tokens);
-
-if(!validate(instructions)) {
-    console.log("Compilation aborted.");
-    return;
-}
-const program = emit(instructions);
-program.forEach(s => console.warn(s.toString(16)));
+HALT ; incorrect opcode`);

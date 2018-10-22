@@ -1,0 +1,8 @@
+PROMPTI reg1
+LOADI reg2 #0
+JMP loop
+loopStart: REGDUMP reg2
+ADDI reg2 #1
+loop: CMP reg2 reg1
+JLE loopStart
+HALT ; incorrect opcode
