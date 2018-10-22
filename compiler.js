@@ -489,6 +489,7 @@ const emit = ({ instructions, jumpTable }) => {
     }
 
     const emitInstruction = (instruction) => {
+        nibblePosition = 1;
         compiledInstruction = 0xFFFF;
         emitOpcode(instruction.opcode);
 
@@ -550,7 +551,6 @@ const emit = ({ instructions, jumpTable }) => {
         }
 
         program.push(compiledInstruction);
-        nibblePosition = 0;
     }
 
     instructions.forEach(emitInstruction);
@@ -560,10 +560,13 @@ const emit = ({ instructions, jumpTable }) => {
 
 const test = `
 PROMPTI reg1
-ADDI reg1 #20 // incorrect opcode, missing reg1
-LOADI reg2 #50 
-ADD reg3 reg1 reg2
-HALT // incorrect opcode
+LOADI reg2 #0
+JMP loop
+loopStart: REGDUMP reg2
+ADDI reg2 #1
+loop: CMP reg2 reg1
+JLE loopStart
+HALT ; incorrect opcode
 `;
 
 const tokens = tokenize(test);

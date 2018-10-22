@@ -6,7 +6,7 @@ const decode = (instruction) => {
   const immediate = (instruction & 0xFF);
   const position = (instruction & 0xFFF);
 
-  return { opcode, reg1, reg2, reg3, immediate, position };
+  return { opcode, reg1, reg2, reg3, immediate, position, raw: instruction };
 }
 
 const createVM = (numRegisters) => {
@@ -92,7 +92,7 @@ const createVM = (numRegisters) => {
         setRegister(instruction.reg1, difference);
         break;
       default:
-        console.error(`FATAL: Unknown instruction: ${instruction.opcode}`);
+        console.error(`FATAL: Unknown instruction: ${instruction.opcode} at ${instructionPointer} (RAW ${instruction.raw.toString(16)})`);
         break;
     }
   };
@@ -118,4 +118,14 @@ const createVM = (numRegisters) => {
 }
 
 const vm = createVM(4);
-vm.runProgram([0x1001, 0x1101, 0x1201, 0x4300, 0x7008, 0x2110, 0x9010, 0x8201, 0x5230, 0x6005, 0x3100, 0x0000]);
+
+
+vm.runProgram([0x40ff,
+  0x1100,
+  0x7005,
+  0x31ff,
+  0x8101,
+  0x510f,
+  0x6003,
+  0x0fff]);
+// vm.runProgram([0x1001, 0x1101, 0x1201, 0x4300, 0x7008, 0x2110, 0x9010, 0x8201, 0x5230, 0x6005, 0x3100, 0x0000]);
