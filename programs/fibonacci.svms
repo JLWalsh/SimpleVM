@@ -1,0 +1,14 @@
+; A fibonacci implementation that iterates as much as the user wants it to
+            LOADI reg1 #1 ; A
+            LOADI reg2 #1 ; B
+            LOADI reg3 #1 ; Iteration counter
+            PROMPTI reg4  ; Ask the user how many times he/she wants the sequence to be calculated
+            JMP eval
+loop:       ADD reg2 reg1 reg2 ; Add A and B together
+            SUB reg1 reg2 reg1 ; Update A
+            ADDI reg3 #1
+eval:       CMP reg3 reg4
+            JLE loop
+            REGDUMP reg2
+            HALT
+
