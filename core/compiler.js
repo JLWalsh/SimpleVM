@@ -16,10 +16,13 @@ const Statements = {
 }
 
 const tokenize = (code, errors) => {
+
     let position = 0;
     let lastParseStart = 0;
     let line = 0;
     const tokens = [];
+
+    const replaceNonUnixLineReturns = () => code = code.replace(/\r?\n|\r/g, '\n');
 
     const error = (error) => {
         errors.push(`[${line}] ERROR: ${error}`);
@@ -135,6 +138,7 @@ const tokenize = (code, errors) => {
         error(`Unrecognized statement: ${code[position]}`);
     }
 
+    replaceNonUnixLineReturns();
     while(!isAtEnd()) {
         lastParseStart = position;
         const token = advance();
@@ -343,7 +347,7 @@ const parse = (statements, errors) => {
 
                 break;
             }
-            default: error(`Unrecognized opcode: ${opcode.type}`, opcode);
+            default: error(`Unrecognized opcode: ${opcode.value}`, opcode);
         }
     }
 
@@ -438,7 +442,7 @@ const emit = ({ instructions, jumpTable }, errors) => {
         const leftMaskOffset = (INSTRUCTION_NIBBLE_SIZE - nibblePosition + 1) * 4;
 
         const rightMask = MASK >> rightMaskOffset;
-        const leftMask = (MASK << leftMaskOffset) & MASK; // left bitshift will create overflow otherwise
+        const leftMask = (MASK << leftMaskOffset) & MASK; // left bitshift will overflow otherwise
         const valueMask = rightMask | leftMask;
 
         const offsettedValue = value << ((INSTRUCTION_NIBBLE_SIZE - nibblePosition - (nibbleLength - 1)) * 4);
@@ -555,11 +559,6 @@ const emit = ({ instructions, jumpTable }, errors) => {
 const compile = (source) => {
     const errors = [];
 
-    const saveToFile = (program, filename) => {
-        var blob = new Blob(new Uint16Array(program), {type: "application/octet-stream"});
-        saveAs(blob, filename+".svms");
-    }
-
     const compileUntilErrors = () => {
         const tokens = tokenize(source, errors);
         if(errors.length > 0)
@@ -579,28 +578,10 @@ const compile = (source) => {
 
         return program;
     }
-   
-    try {
-        const program = compileUntilErrors();
-    
-        if(errors.length > 0) {
-            errors.forEach(console.error);
-            console.error("Compilation aborted.");
-        }
 
-        if(program && errors.length === 0)
-            saveToFile(window.prompt("Name?"));
-    } catch(error) {
-        console.error("Compiler error.")
-        console.error(error);
-    }
+    const program = compileUntilErrors();
+
+    return { program, errors };
 }
 
-compile(`PROMPTI reg1
-LOADI reg2 #0
-JMP loop
-loopStart: REGDUMP reg2
-ADDI reg2 #1
-loop: CMP reg2 reg1
-JLE loopStart
-HALT ; incorrect opcode`);
+module.exports = { compile, tokenize, parse };

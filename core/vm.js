@@ -9,12 +9,14 @@ const decode = (instruction) => {
   return { opcode, reg1, reg2, reg3, immediate, position, raw: instruction };
 }
 
-const createVM = (numRegisters) => {
+const createVM = (promptImmediate, writeImmediate) => {
+  const NUMBER_OF_REGISTERS = 16;
+
   let running = true;
   let zRegister = 0;
   let instructionPointer = 0;
 
-  const registers = new Array(numRegisters);
+  const registers = new Array(NUMBER_OF_REGISTERS);
   const Opcodes = {
     HALT: 0,
     LOADI: 1,
@@ -48,26 +50,24 @@ const createVM = (numRegisters) => {
     zRegister = value;
   }
 
-  const eval = (instruction) => {
+  const eval = async (instruction) => {
     switch(instruction.opcode) {
       case Opcodes.HALT:
         running = false;
-        //console.warn("Machine halted");
         break;
       case Opcodes.LOADI:
         setRegister(instruction.reg1, instruction.immediate);
-        //console.log(`Load reg ${instruction.reg1} with immediate value ${instruction.immediate}`);
         break;
       case Opcodes.ADD:
         const sum = readRegister(instruction.reg2) + readRegister(instruction.reg3);
         setRegister(instruction.reg1, sum);
-        //console.log(`Add reg ${instruction.reg1} + ${instruction.reg2} into ${instruction.reg3} = ${sum}`);
         break;
       case Opcodes.REGDUMP:
-        console.warn(`REGDUMP of reg ${instruction.reg1}: ${readRegister(instruction.reg1)}`);
+        writeImmediate(readRegister(instruction.reg1), instruction.reg1);
         break;
       case Opcodes.PROMPTI:
-        const value = Number(window.prompt("Enter an instant value"));
+        const immediate = await promptImmediate();
+        const value = Number(immediate);
         setRegister(instruction.reg1, value);
         break;
       case Opcodes.CMP:
@@ -105,27 +105,18 @@ const createVM = (numRegisters) => {
     return program[instructionPointer++];
   }
 
-  const runProgram = (program) => {
+  const runProgram = async (program) => {
     while(running) {
       const instruction = fetchNextInstruction(program);
       const decodedInstruction = decode(instruction);
 
-      eval(decodedInstruction);
+      await eval(decodedInstruction);
     }
+
+    return 0;
   }
 
   return { runProgram };
 }
 
-const vm = createVM(4);
-
-
-vm.runProgram([0x40ff,
-  0x1100,
-  0x7005,
-  0x31ff,
-  0x8101,
-  0x510f,
-  0x6003,
-  0x0fff]);
-// vm.runProgram([0x1001, 0x1101, 0x1201, 0x4300, 0x7008, 0x2110, 0x9010, 0x8201, 0x5230, 0x6005, 0x3100, 0x0000]);
+module.exports = createVM;
