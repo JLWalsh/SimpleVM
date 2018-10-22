@@ -215,7 +215,7 @@ const parse = (statements) => {
 
     const opcode = (opcode) => {
         switch(opcode.value) {
-            case Opcodes.HALT: break;
+            case Opcodes.HALT: addInstruction(Opcodes.HALT); break;
             case Opcodes.ADD: {
                 if(!matchArg(Statements.REGISTER)) {
                     error('Destination register is missing.', opcode);
@@ -236,7 +236,6 @@ const parse = (statements) => {
 
                 break;
             }
-            case Opcodes.HALT: addInstruction(Opcodes.HALT); break;
             case Opcodes.LOADI: {
                 if(!matchArg(Statements.REGISTER)) {
                     error('Destination register is missing', opcode);
@@ -441,44 +440,32 @@ const emit = ({ instructions, jumpTable }) => {
     }
 
     const emit = (value, nibbleLength) => {
-        const rightMaskOffset = Math.max((nibblePosition + nibbleLength), 0) * 4;
+        const rightMaskOffset = Math.max((nibblePosition + (nibbleLength - 1)), 0) * 4;
         const leftMaskOffset = (INSTRUCTION_NIBBLE_SIZE - nibblePosition + 1) * 4;
 
         const rightMask = MASK >> rightMaskOffset;
         const leftMask = (MASK << leftMaskOffset) & MASK; // left bitshift will create overflow otherwise
         const valueMask = rightMask | leftMask;
 
-        const offsettedValue = value << ((INSTRUCTION_NIBBLE_SIZE - nibblePosition) * 4);
+        const offsettedValue = value << ((INSTRUCTION_NIBBLE_SIZE - nibblePosition - (nibbleLength - 1)) * 4);
         const maskedValue = valueMask | offsettedValue;
         
         compiledInstruction = compiledInstruction & maskedValue;
+        nibblePosition += nibbleLength;
     }
 
     const emitRegister = (register) => {
         const registerBits = (register.value - 1);
         emit(registerBits, 1);
-        nibblePosition++;
     };
 
     const emitImmediate = (immediate) => {
         emit(immediate.value, 2);
-        nibblePosition += 2;
     };
-
-    const emitBlank = () => {
-        if(nibblePosition < INSTRUCTION_NIBBLE_SIZE) {
-            const maskOffset = (INSTRUCTION_NIBBLE_SIZE - nibblePosition - 1) * 4;
-            const zeroMask = (MASK << maskOffset) & MASK
-
-            compiledInstruction = compiledInstruction & zeroMask;
-            nibblePosition = INSTRUCTION_NIBBLE_SIZE;
-        }
-    }
 
     const emitJump = (jump) => {
         const jumpPosition = resolveJumpPosition(jump);
         emit(jumpPosition, 3);
-        nibblePosition += 3;
     };
 
     const emitOpcode = (opcode) => {
@@ -499,7 +486,6 @@ const emit = ({ instructions, jumpTable }) => {
         }
 
         emit(opcodeBits, 1);
-        nibblePosition++;
     }
 
     const emitInstruction = (instruction) => {
@@ -507,10 +493,10 @@ const emit = ({ instructions, jumpTable }) => {
         emitOpcode(instruction.opcode);
 
         switch(instruction.opcode) {
-            case Opcodes.HALT: emitBlank(); break;
+            case Opcodes.HALT: break;
             case Opcodes.LOADI: {
                 emitRegister(instruction.args[0]);
-                emitImmediate(instruction.args[2]);
+                emitImmediate(instruction.args[1]);
 
                 break;
             }
@@ -523,20 +509,17 @@ const emit = ({ instructions, jumpTable }) => {
             }
             case Opcodes.REGDUMP: {
                 emitRegister(instruction.args[0]);
-                emitBlank();
 
                 break;
             }
             case Opcodes.PROMPTI: {
                 emitRegister(instruction.args[0]);
-                emitBlank();
 
                 break;
             }
             case Opcodes.CMP: {
                 emitRegister(instruction.args[0]);
                 emitRegister(instruction.args[1]);
-                emitBlank();
 
                 break;
             }
@@ -566,16 +549,21 @@ const emit = ({ instructions, jumpTable }) => {
             default: error(`Unrecognized opcode: ${instruction.opcode}`);
         }
 
+        program.push(compiledInstruction);
+        nibblePosition = 0;
     }
 
     instructions.forEach(emitInstruction);
 
-    return compiledInstruction;
+    return program;
 }
 
 const test = `
-test:
-JMP test
+PROMPTI reg1
+ADDI reg1 #20 // incorrect opcode, missing reg1
+LOADI reg2 #50 
+ADD reg3 reg1 reg2
+HALT // incorrect opcode
 `;
 
 const tokens = tokenize(test);
@@ -586,5 +574,4 @@ if(!validate(instructions)) {
     return;
 }
 const program = emit(instructions);
-
-console.warn(program.toString(16));
+program.forEach(s => console.warn(s.toString(16)));
