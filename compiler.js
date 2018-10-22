@@ -417,19 +417,38 @@ const validate = ({ instructions, jumpTable }) => {
 
 const emit = ({ instructions, jumpTable }) => {
     const INSTRUCTION_NIBBLE_SIZE = 4;
+    const MASK = 0xFFFF;
 
     const program = [];
 
-    let compiledInstruction;
+    let compiled = MASK;
     let nibblePosition = 0;
 
     const error = (message) => console.error(`ERROR: ${message}`);
     
     const emit = (value) => {
-        const shiftedValue = value << ((INSTRUCTION_NIBBLE_SIZE - nibblePosition - 1) * 4);
-        const remainingMask = (nibblePosition * 4);
+        // 0x0FFF
+        // 0x1000 1
+        // 0x1FFF
 
-        compiledInstruction = (compiledInstruction & shiftedValue) | remainingMask;
+        // 0x00FF
+        // 0x0200 2
+        // 0x12FF
+
+        // 0x000F
+        // 0x0200 3
+        // 0x12FF
+
+        // 0x0000
+        // 0x0200 4
+        // 0x12FF
+
+        const rightMask = MASK >>> (nibblePosition + 1) * 4;
+        const leftMask = (rightMask << (INSTRUCTION_NIBBLE_SIZE - nibblePosition) * 4) & MASK;
+
+        const shiftedValue = value << (INSTRUCTION_NIBBLE_SIZE - nibblePosition - 1) * 4;
+        const c = compiled | rightMask;
+        console.warn((0x0100 | leftMask).toString(16));
     }
 
     const emitRegister = (register) => {
@@ -467,7 +486,7 @@ const emit = ({ instructions, jumpTable }) => {
     }
 
     const emitInstruction = (instruction) => {
-        compiledInstruction = 0xFFFF;
+        compiled = 0xFFFF;
         emitOpcode(instruction.opcode);
 
         switch(instruction.opcode) {
@@ -477,15 +496,16 @@ const emit = ({ instructions, jumpTable }) => {
                 emitRegister(instruction.args[2]);
             }
         }
+
     }
 
     emitInstruction(instructions[0]);
 
-    return compiledInstruction;
+    return compiled;
 }
 
 const test = `
-ADD reg1 reg1 reg3
+ADD reg5 reg7 reg3
 `;
 
 const tokens = tokenize(test);
@@ -498,4 +518,4 @@ if(!validate(instructions)) {
 
 const program = emit(instructions);
 
-console.warn(program.toString(16));
+console.warn(program.toString(2));
