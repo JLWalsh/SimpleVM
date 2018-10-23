@@ -4,7 +4,7 @@ import IVMIO from "./IVMIO";
 import Registers from "./Registers";
 import IOpcodeExecutor from "./FOpcodeExecutor";
 import IVMLogger from "./IVMLogger";
-import opcodes from './Opcodes';
+import opcodeExecutors from './OpcodeExecutors';
 
 class VM {
 
@@ -13,13 +13,17 @@ class VM {
     public readonly io: IVMIO;
     public readonly registers: Registers;
     public running: boolean;
-    public instructionPointer: number;
-
+    
+    public get InstructionPointer() : number {
+        return this.instructionPointer;
+    }
+    
     private readonly decoder: BytecodeDecoder;
     private readonly log: IVMLogger;
     private readonly opcodes: IOpcodeExecutor[];
-
+    
     private program: number[];
+    private instructionPointer: number;
 
     public constructor(log: IVMLogger, io: IVMIO) {
         this.io = io;
@@ -27,7 +31,7 @@ class VM {
 
         this.decoder = new BytecodeDecoder();
         this.registers = new Registers(VM.MAX_NUM_REGISTERS);
-        this.opcodes = opcodes;
+        this.opcodes = opcodeExecutors;
 
         this.instructionPointer = 0;
         this.running = false;
