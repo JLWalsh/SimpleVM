@@ -19,13 +19,13 @@ class VM {
     }
     
     private readonly decoder: BytecodeDecoder;
-    private readonly log: IVMLogger;
+    private readonly log?: IVMLogger;
     private readonly opcodes: IOpcodeExecutor[];
     
     private program: number[];
     private instructionPointer: number;
 
-    public constructor(log: IVMLogger, io: IVMIO) {
+    public constructor(io: IVMIO, log?: IVMLogger, ) {
         this.io = io;
         this.log = log;
 
@@ -60,7 +60,9 @@ class VM {
 
     private next():number {
         if(this.instructionPointer >= this.program.length) {
-            this.log.error("Program ran out of instructions before halting.");
+            if(this.log)
+                this.log.error("Program ran out of instructions before halting.");
+
             this.running = false;
         }
 
