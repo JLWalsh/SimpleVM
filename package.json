@@ -18,6 +18,7 @@
   "homepage": "https://github.com/JLWalsh/SimpleVM#readme",
   "devDependencies": {
     "@types/jest": "^23.3.7",
+    "@types/node": "^10.12.0",
     "g": "^2.0.1",
     "jest": "^23.6.0",
     "ts-jest": "^23.10.4",
