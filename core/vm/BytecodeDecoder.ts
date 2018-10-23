@@ -1,6 +1,6 @@
 import Instruction from "../common/Instruction";
 
-class InstructionDecoder {
+class BytecodeDecoder {
 
     public decode(rawInstruction: number): Instruction {
         const opcode = (rawInstruction & 0xF000) >> 12;
@@ -12,5 +12,6 @@ class InstructionDecoder {
 
         return new Instruction({ opcode, reg1, reg2, reg3, immediate, jumpAddress });
     }
-    
 }
+
+export default BytecodeDecoder;

@@ -21,9 +21,4 @@ class Instruction {
     }
 }
 
-const opcode = (instruction & 0xF000) >> 12;
-const reg1 = (instruction & 0xF00) >> 8;
-const reg2 = (instruction & 0xF0) >> 4;
-const reg3 = (instruction & 0xF);
-const immediate = (instruction & 0xFF);
-const position = (instruction & 0xFFF);
+export default Instruction;

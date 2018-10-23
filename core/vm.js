@@ -1,13 +1,5 @@
-const decode = (instruction) => {
-  const opcode = (instruction & 0xF000) >> 12;
-  const reg1 = (instruction & 0xF00) >> 8;
-  const reg2 = (instruction & 0xF0) >> 4;
-  const reg3 = (instruction & 0xF);
-  const immediate = (instruction & 0xFF);
-  const position = (instruction & 0xFFF);
-
-  return { opcode, reg1, reg2, reg3, immediate, position, raw: instruction };
-}
+import BytecodeDecoder from "./vm/BytecodeDecoder";
+import Instruction from "./common/Instruction";
 
 const createVM = (promptImmediate, writeImmediate) => {
   const NUMBER_OF_REGISTERS = 16;
@@ -50,7 +42,7 @@ const createVM = (promptImmediate, writeImmediate) => {
     zRegister = value;
   }
 
-  const eval = async (instruction) => {
+  const eval = async (instruction: Instruction) => {
     switch(instruction.opcode) {
       case Opcodes.HALT:
         running = false;
@@ -76,11 +68,11 @@ const createVM = (promptImmediate, writeImmediate) => {
         break;
       case Opcodes.JLE:
         if(zRegister <= 0) {
-          instructionPointer = instruction.position;
+          instructionPointer = instruction.jumpAddress;
         }
         break;
       case Opcodes.JMP:
-        instructionPointer = instruction.position;
+        instructionPointer = instruction.jumpAddress;
         break;
       case Opcodes.ADDI:
         const regValue = readRegister(instruction.reg1);
@@ -106,9 +98,11 @@ const createVM = (promptImmediate, writeImmediate) => {
   }
 
   const runProgram = async (program) => {
+    const decoder = new BytecodeDecoder();
+
     while(running) {
       const instruction = fetchNextInstruction(program);
-      const decodedInstruction = decode(instruction);
+      const decodedInstruction = decoder.decode(instruction);
 
       await eval(decodedInstruction);
     }
