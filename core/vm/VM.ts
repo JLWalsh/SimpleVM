@@ -60,7 +60,7 @@ class VM {
             this.running = false;
         }
 
-        return this.program[this.instructionPointer++];
+        return this.program[this.instructionPointer];
     }
 }
 

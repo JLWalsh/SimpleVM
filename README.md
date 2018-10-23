@@ -61,11 +61,11 @@ Adds two registers together and stores the sum into the specified register.
 
 *[0-4]*: ADD opcode
 
-*[5-8]*: Left operand register
+*[5-8]*: Specified register
 
-*[9-12]*: Right operand register
+*[9-12]*: Left operand register
 
-*[13-16]*: Specified register
+*[13-16]*: Right operand register
 
 **Example**
 
@@ -174,11 +174,11 @@ Subtracts the value of two registers and stores it into the specified register.
 
 *[0-4]*: SUB opcode
 
-*[5-8]*: Left operand register
+*[5-8]*: Specified register
 
-*[9-12]*: Right operand register
+*[9-12]*: Left operand register
 
-*[13-16]*: Specified register
+*[13-16]*: Right operand register
 
 **Example**
 
