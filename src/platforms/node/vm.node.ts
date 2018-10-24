@@ -1,10 +1,10 @@
 import fs from 'fs';
 import VM from "../../core/vm/VM";
-import NodeVMIO from "./NodeVMIO";
+import NodeVMIO from "./vm/NodeVMIO";
 import ConsoleVMLogger from "../shared/ConsoleVMLogger";
 import FileUtils from './utils/FileUtils';
 
-const vm = new VM(new ConsoleVMLogger(), new NodeVMIO());
+const vm = new VM(new NodeVMIO(), new ConsoleVMLogger());
 
 const file = process.argv[2];
 

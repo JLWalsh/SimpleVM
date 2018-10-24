@@ -1,5 +1,5 @@
 import readline from 'readline';
-import IVMIO from '../../core/vm/IVMIO';
+import IVMIO from '../../../core/vm/IVMIO';
 
 class NodeVMIO implements IVMIO {
     write(message: string): void {
