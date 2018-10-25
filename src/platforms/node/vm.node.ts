@@ -1,7 +1,7 @@
 import fs from 'fs';
 import VM from "../../core/vm/VM";
 import NodeVMIO from "./vm/NodeVMIO";
-import ConsoleVMLogger from "../shared/ConsoleVMLogger";
+import ConsoleVMLogger from "../common/ConsoleVMLogger";
 import FileUtils from './utils/FileUtils';
 
 const vm = new VM(new NodeVMIO(), new ConsoleVMLogger());

@@ -1,14 +1,17 @@
 .PHONY: build clean
-default: build
+default: build-node
 
-INSTALL_DIR=./node_modules/typescript/bin/
-TSC=$(INSTALL_DIR)tsc
+TSC_INSTALL_DIR=./node_modules/typescript/bin/
+TSC=$(TSC_INSTALL_DIR)tsc
 
-build-node :
-	$(TSC) -p --outDir
+JEST_INSTALL_DIR=./node_modules/jest/bin/
+JEST=$(JEST_INSTALL_DIR)jest.js
 
-build : 
-	$(TSC)
-	
-clean :	
-		rm -rf ./dist
+build-node:
+	$(TSC) -p "$(CURDIR)/src/platforms/node/tsconfig.node.json"
+
+test:
+	node $(JEST) src
+
+clean:	
+	rm -rf ./dist
