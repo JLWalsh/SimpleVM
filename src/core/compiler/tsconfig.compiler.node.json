@@ -1,0 +1,9 @@
+{
+  "extends": "../../tsconfig.json",
+  "include": [
+    "./Test.ts"
+  ],
+  "compilerOptions": {
+    "outDir": "../../dist/node", /* Redirect output structure to the directory. */
+  }
+}

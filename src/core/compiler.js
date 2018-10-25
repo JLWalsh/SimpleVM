@@ -1,118 +1,98 @@
-const Tokens = {
-    HASH: '#',
-    AT: '@',
-    COLON: ':',
-    SEMICOLON: ';',
-    NEWLINE: '\n',
-    WHITESPACE: ' ',
-}
+import Char from './compiler/Char';
 
-const Statements = {
-    WORD: 'WORD',
-    REGISTER: 'REGISTER',
-    IMMEDIATE: 'IMMEDIATE',
-    ADDRESS: 'ADDRESS',
-    JUMPLABEL: 'JUMPLABEL',
-}
 
 const tokenize = (code, errors) => {
 
-    let position = 0;
-    let lastParseStart = 0;
-    let line = 0;
-    const tokens = [];
+    // let position = 0;
+    // let lastParseStart = 0;
+    // let line = 0;
+    // const tokens = [];
 
-    const replaceNonUnixLineReturns = () => code = code.replace(/\r?\n|\r/g, '\n');
+    // const replaceNonUnixLineReturns = () => code = code.replace(/\r?\n|\r/g, '\n');
 
-    const error = (error) => {
-        errors.push(`[${line}] ERROR: ${error}`);
-    }
+    // const error = (error) => {
+    //     errors.push(`[${line}] ERROR: ${error}`);
+    // }
 
-    const isAtEnd = () => position >= code.length;
+    // const isAtEnd = () => position >= code.length;
 
-    const peek = () => code[position];
+    // const peek = () => code[position];
 
-    const match = (char) => {
-        const match = peek() == char;
+    // const match = (char) => {
+    //     const match = peek() == char;
 
-        if(match)
-            advance();
+    //     if(match)
+    //         advance();
 
-        return match; 
-    }
+    //     return match; 
+    // }
 
-    const advance = () => {
-        if(isAtEnd())
-            return;
+    // const advance = () => {
+    //     if(isAtEnd())
+    //         return;
 
-        const token = code[position++];
+    //     const token = code[position++];
 
-        return token;
-    };
+    //     return token;
+    // };
 
-    const addStatement = (token) => {
-        addStatementWithValue(token, undefined);
-    }
+    // const addStatement = (token) => {
+    //     addStatementWithValue(token, undefined);
+    // }
 
-    const addStatementWithValue = (type, value) => {
-        const literal = code.substring(lastParseStart, position);
+    // const addStatementWithValue = (type, value) => {
+    //     const literal = code.substring(lastParseStart, position);
 
-        tokens.push({ type, line, value, literal });
-    }
+    //     tokens.push({ type, line, value, literal });
+    // }
 
-    const isNumeric = (char) => char <= '9' && char >= '0';
+    // const isRegister = (str) => {
+    //     if(!str.startsWith('reg'))
+    //         return false;
 
-    const isWhitespace = (char) => char === ' ';
-
-    const isAlphaNumeric = (char) => (char >= 'a' && char <= 'z') || (char >= 'A' && char <= 'Z');
-
-    const isRegister = (str) => {
-        if(!str.startsWith('reg'))
-            return false;
-
-        const rest = str.substring(3);
-        const hasNonNumerics = rest.split('').filter(isNumeric).length > 0;
+    //     const rest = str.substring(3);
+    //     const hasNonNumerics = rest.split('').filter(Char.isNumeric).length > 0;
     
-        return hasNonNumerics;
-    }
- 
-    const skipComment = () => {
-        while(peek() != '\n' && !isAtEnd())
-            advance();
-    }
+    //     return hasNonNumerics;
+    // }
 
-    const parseImmediate = () => {
-        while(isNumeric(peek()) && !isAtEnd())
-            advance();
+    // const skipComment = () => {
+    //     while(peek() != '\n' && !isAtEnd())
+    //         advance();
+    // }
 
-        if(lastParseStart == position - 1) {
-            error("Expected immediate value after #.");
-            return;
-        }
+    // const parseImmediate = () => {
+    //     while(Char.isNumeric(peek()) && !isAtEnd())
+    //         advance();
 
-        const literal = code.substring(lastParseStart + 1, position);
-        const immediate = Number(literal);
+    //     if(lastParseStart == position - 1) {
+    //         error("Expected immediate value after #.");
+    //         return;
+    //     }
 
-        addStatementWithValue(Statements.IMMEDIATE, immediate);
-    }
+    //     const literal = code.substring(lastParseStart + 1, position);
+    //     const immediate = Number(literal);
 
-    const parseAddress = () => {
-        while (isNumeric(peek()) && !isAtEnd())
-            advance();
+    //     addStatementWithValue(Statements.IMMEDIATE, immediate);
+    // }
 
-        if (lastParseStart == position - 1) {
-            error("Expected address after @.");
-            return;
-        }
+    // const parseAddress = () => {
+    //   while (Char.isNumeric(peek()) && !isAtEnd())
+    //         advance();
 
-        const literal = code.substring(lastParseStart + 1, position);
-        const address = Number(literal);
+    //     if (lastParseStart == position - 1) {
+    //         error("Expected address after @.");
+    //         return;
+    //     }
 
-        addStatementWithValue(Statements.ADDRESS, address);
-    }
+    //     const literal = code.substring(lastParseStart + 1, position);
+    //     const address = Number(literal);
+
+    //     addStatementWithValue(Statements.ADDRESS, address);
+    // }
 
     const parseText = () => {
-        while((isAlphaNumeric(peek()) || isNumeric(peek())) && !isAtEnd())
+      while ((Char.isAlphaNumeric(peek()) || Char.isNumeric(peek())) && !isAtEnd())
             advance();
 
         if(match(Tokens.COLON)) {
@@ -122,7 +102,7 @@ const tokenize = (code, errors) => {
             return;
         }
 
-        if(!isAlphaNumeric(peek())) {
+      if (!Char.isAlphaNumeric(peek())) {
             const text = code.substring(lastParseStart, position);
 
             if(isRegister(text)) {
@@ -138,7 +118,7 @@ const tokenize = (code, errors) => {
         error(`Unrecognized statement: ${code[position]}`);
     }
 
-    replaceNonUnixLineReturns();
+    // replaceNonUnixLineReturns();
     while(!isAtEnd()) {
         lastParseStart = position;
         const token = advance();
