@@ -9,6 +9,7 @@ JEST=$(JEST_INSTALL_DIR)jest.js
 
 build-node:
 	$(TSC) -p "$(CURDIR)/src/platforms/node/tsconfig.node.json"
+	cp ./scripts/vm.bat ./dist/node/vm.bat
 
 test:
 	node $(JEST) src
