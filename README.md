@@ -4,15 +4,34 @@
 ### Introduction
 This virtual machine was written in Javascript with the sole intention of learning more about how they work. This project is heavily inspired by [this online guide published on WikiBooks](https://en.wikibooks.org/wiki/Creating_a_Virtual_Machine/Register_VM_in_C), except it's written in JS and has more instructions. The machine is a register-based virtual machine, which means that is uses register to store arguments when invoking an opcode.
 
+### Quick commands
+
+**Build for node**
+
+`make build-node`
+
+**Run unit tests**
+
+`make test`
+
+**Clean previous builds**
+
+`make clean`
+
 ### Compiler
-A basic (and most likely buggy) compiler is available under the `platforms/node` directory. Here you will find `svmc.bat`, which can be used to call node on `compiler.node.js` with the file to compile. 
+A basic (and most likely buggy) compiler is available under the `src/platforms/node` directory. Here you will find `svmc.bat`, which can be used to call node on `compiler.node.js` with the file to compile. 
+
+The compiler takes to arguments:
+
+1. The source file
+2. The destination of the compiled file. This argument is not required.  
 
 *Example*: `svmc.bat myprogram.svms mycompiledprogram.svm`
 
 ### Launching the virtual machine
-As for now, the only target environnement for the virtual machine is Node. Extending to an other environnement is as simple as providing two functions, being `promptImmediate` and `writeImmediate`. To run a compiled program, simply use `svm.bat` from the `platforms/node` directory.
+As for now, the only target environnement for the virtual machine is Node. To run a compiled program, simply use `vm.bat` from the `dist/node` directory.
 
-*Example*: `svm.bat mycompiledprogram.svm`
+*Example*: `vm.bat mycompiledprogram.svm`
 
 ### Instructions
 
@@ -61,11 +80,11 @@ Adds two registers together and stores the sum into the specified register.
 
 *[0-4]*: ADD opcode
 
-*[5-8]*: Left operand register
+*[5-8]*: Specified register
 
-*[9-12]*: Right operand register
+*[9-12]*: Left operand register
 
-*[13-16]*: Specified register
+*[13-16]*: Right operand register
 
 **Example**
 
@@ -174,11 +193,11 @@ Subtracts the value of two registers and stores it into the specified register.
 
 *[0-4]*: SUB opcode
 
-*[5-8]*: Left operand register
+*[5-8]*: Specified register
 
-*[9-12]*: Right operand register
+*[9-12]*: Left operand register
 
-*[13-16]*: Specified register
+*[13-16]*: Right operand register
 
 **Example**
 
