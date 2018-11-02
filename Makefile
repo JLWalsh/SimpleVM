@@ -8,7 +8,7 @@ JEST_INSTALL_DIR=./node_modules/jest/bin/
 JEST=$(JEST_INSTALL_DIR)jest.js
 
 build-compiler-node:
-	$(TSC) -p "$(CURDIR)/src/core/compiler/Test.ts"
+	$(TSC) -p "$(CURDIR)/src/core/compiler/tsconfig.compiler.node.json"
 
 build-node:
 	$(TSC) -p "$(CURDIR)/src/platforms/node/tsconfig.node.json"

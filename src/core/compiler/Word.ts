@@ -16,7 +16,7 @@ class Word {
   static isOpcode(word: string): boolean {
     const opcodeKeys = Object.keys(Opcodes);
 
-    return opcodeKeys.includes(opcodeKeys);
+    return opcodeKeys.indexOf(word) !== -1;
   }
 }
 

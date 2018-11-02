@@ -124,7 +124,7 @@ class Tokenizer {
 
   private advance(): string {
     if(this.isAtEnd())
-      return;
+      throw new Error('Tried to advance when no tokens are left.');
 
       return this.code[this.position++];
   }
