@@ -15,9 +15,7 @@ const program = `
   ADD reg1 reg2 reg3 ; fofoeifokwefoefpkewfefw
   ;efewfewfoiwefj
   SUB reg1 reg2 #1993 @10202
-  woops # @ ;hahaha
-  dsokdsok
   PROMPTI reg1
 `;
 
-t.parse(program);
+console.warn(t.parse(program));

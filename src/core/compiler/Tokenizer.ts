@@ -62,13 +62,15 @@ class Tokenizer {
       } else if(Word.isOpcode(text)) {
         this.addTokenWithValue(StatementType.OPCODE, text);
       } else {
-        this.error(`Unrecognized statement: ${this.code[this.position]}`);
+        this.error(`Unrecognized statement: ${text}`);
       }
 
       return;
     }
 
-    this.error(`Unrecognized statement: ${this.code[this.position]}`);
+    const unrecognized = this.code.substring(this.lastParseStart, this.position);
+
+    this.error(`Unrecognized statement: ${unrecognized}`);
   }
 
   private parseAddress() {
